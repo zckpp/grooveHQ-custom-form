@@ -96,10 +96,10 @@ if($_POST["body"]){$body = $_POST["body"];}else{$body = "not given";}
 $label .= $subject;
 
 //set groove ticket attributes
-$response = HTTPRequester::HTTPPost("https://api.groovehq.com/v1/tickets?access_token=7ff250080e19f02d68b6cbe252f28915a1de289715f7b9a097244e2cf11087f9",
+$response = HTTPRequester::HTTPPost("https://api.groovehq.com/v1/tickets?access_token={your token}",
     array(
         "body" => $body,
-        "from" => "qzhang@carnegiescience.edu",
+        "from" => "{your email related to the token}",
         "tags" => $label,
         "subject" => $subject,
         //customer info
@@ -121,7 +121,7 @@ else {
 if("yes" == $_POST["priority"] && $response){
         $response = json_decode($response);
         $ticket_number = $response->ticket->number;
-        $url = "https://api.groovehq.com/v1/tickets/" . $ticket_number . "/priority?access_token=7ff250080e19f02d68b6cbe252f28915a1de289715f7b9a097244e2cf11087f9";
+        $url = "https://api.groovehq.com/v1/tickets/" . $ticket_number . "/priority?access_token={your token}";
         $response = HTTPRequester::HTTPPut($url, array("priority" => "urgent"));
 }
 
