@@ -1,8 +1,17 @@
 <?php
 
+//need to be changed when intranet go live
+header('Refresh: 1; URL=https://dev-people.carnegiescience.edu/node/4228');
+//groove HQ service account credentials
+$serviceEmail = "";
+$serviceToken = "";
 
-header('Refresh: 1; URL=https://dev-people.carnegiescience.edu/grant-ticketing-system');
 class HTTPRequester {
+    //get http response header
+    public static $status;
+    public static function getStatus($ch) {
+        self::$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    }
     /**
      * @description Make HTTP-GET call
      * @param       $url
@@ -33,6 +42,7 @@ class HTTPRequester {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
         $response = curl_exec($ch);
+        self::getStatus($ch);
         curl_close($ch);
         return $response;
     }
@@ -74,8 +84,8 @@ class HTTPRequester {
     }
 }
 
-
 $label = "";
+
 //customer email
 if($_POST["to"]){$email = $_POST["to"];}else{$email = "not given";}
 //customer name
@@ -96,10 +106,10 @@ if($_POST["body"]){$body = $_POST["body"];}else{$body = "not given";}
 $label .= $subject;
 
 //set groove ticket attributes
-$response = HTTPRequester::HTTPPost("https://api.groovehq.com/v1/tickets?access_token={your token}",
+$response = HTTPRequester::HTTPPost("https://api.groovehq.com/v1/tickets?access_token=" . $serviceToken,
     array(
         "body" => $body,
-        "from" => "{your email related to the token}",
+        "from" => $serviceEmail,
         "tags" => $label,
         "subject" => $subject,
         //customer info
@@ -108,20 +118,20 @@ $response = HTTPRequester::HTTPPost("https://api.groovehq.com/v1/tickets?access_
             "name" => $name
         )
     ));
+$status = HTTPRequester::$status;
 
-
-if ($response) {
+if ($response && "201" == $status) {
     echo "your ticket has been sent!";
 }
 else {
-    echo "Something went wrong, please contact the admin";
+    echo "Error number " . $status . ", please try again or contact the admin";
 }
 
 //set priority to urgent
 if("yes" == $_POST["priority"] && $response){
         $response = json_decode($response);
         $ticket_number = $response->ticket->number;
-        $url = "https://api.groovehq.com/v1/tickets/" . $ticket_number . "/priority?access_token={your token}";
+        $url = "https://api.groovehq.com/v1/tickets/" . $ticket_number . "/priority?access_token=" . $serviceToken;
         $response = HTTPRequester::HTTPPut($url, array("priority" => "urgent"));
 }
 
